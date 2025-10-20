@@ -1,18 +1,18 @@
 const os = require('os');
 
 function getLocalIP() {
-  const interfaces = os.networkInterfaces();
-  
-  for (const name of Object.keys(interfaces)) {
-    for (const interface of interfaces[name]) {
-      // IPv4이고 내부 네트워크가 아닌 주소 찾기
-      if (interface.family === 'IPv4' && !interface.internal) {
-        return interface.address;
-      }
+    const interfaces = os.networkInterfaces();
+
+    for (const name of Object.keys(interfaces)) {
+        for (const interface of interfaces[name]) {
+            // IPv4이고 내부 네트워크가 아닌 주소 찾기
+            if (interface.family === 'IPv4' && !interface.internal) {
+                return interface.address;
+            }
+        }
     }
-  }
-  
-  return 'localhost';
+
+    return 'localhost';
 }
 
 const ip = getLocalIP();

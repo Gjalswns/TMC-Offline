@@ -33,7 +33,7 @@ export const defaultState: GameState = {
   timerStartTime: undefined,
   timerDuration: 300,
   displayMode: "scoreboard",
-  autoSwitch: false,
+  autoSwitch: true,
   timerMessage: "진행 중",
   currentRound: 1, // Start at round 1
 }
