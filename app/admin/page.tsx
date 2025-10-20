@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useRef } from "react"
+import React, { useRef, useState } from "react"
 import { useGameState } from "@/hooks/use-game-state"
 import { startTimer, pauseTimer, resetTimer } from "@/lib/game-state"
 import { Button } from "@/components/ui/button"
@@ -8,13 +8,28 @@ import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
-import { Play, Pause, RotateCcw, ExternalLink, Download, Upload } from "lucide-react"
+import { Play, Pause, RotateCcw, ExternalLink, Download, Upload, Lock } from "lucide-react"
 import { gameStateToCSV, downloadCSV, parseCSVToTeams, generateFilename } from "@/lib/csv-utils"
 
 export default function ControlPanel() {
   const { state, updateState, updateTeam, isHydrated } = useGameState()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [password, setPassword] = useState("")
+  const [passwordError, setPasswordError] = useState("")
+
+  // 비밀번호 확인
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (password === "0824") {
+      setIsAuthenticated(true)
+      setPasswordError("")
+    } else {
+      setPasswordError("잘못된 비밀번호입니다.")
+      setPassword("")
+    }
+  }
+
   // 타이머 제어 함수들
   const handleTimerToggle = () => {
     if (state.timerRunning) {
@@ -73,6 +88,47 @@ export default function ControlPanel() {
     return (
       <div className="min-h-screen bg-white p-8 flex items-center justify-center">
         <div className="text-gray-900 text-xl">관리 패널 로딩 중...</div>
+      </div>
+    )
+  }
+
+  // 비밀번호 입력 화면
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 p-8 flex items-center justify-center">
+        <Card className="w-full max-w-md p-8 bg-white/95 backdrop-blur-sm">
+          <div className="text-center mb-6">
+            <Lock className="w-12 h-12 mx-auto mb-4 text-gray-600" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">관리자 인증</h1>
+            <p className="text-gray-600">관리 패널에 접근하려면 비밀번호를 입력하세요.</p>
+          </div>
+
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <div>
+              <Input
+                type="password"
+                placeholder="비밀번호 입력"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="text-center text-lg tracking-widest"
+                autoFocus
+              />
+              {passwordError && (
+                <p className="text-red-500 text-sm mt-2 text-center">{passwordError}</p>
+              )}
+            </div>
+
+            <Button type="submit" className="w-full">
+              접근하기
+            </Button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-xs text-gray-500">
+              비밀번호를 잊으셨나요? 관리자에게 문의하세요.
+            </p>
+          </div>
+        </Card>
       </div>
     )
   }
