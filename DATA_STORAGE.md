@@ -20,7 +20,7 @@ interface GameState {
   displayMode: string        // 디스플레이 모드 ("scoreboard" | "timer")
   autoSwitch: boolean        // 자동 전환 설정
   timerMessage?: string      // 타이머 메시지
-  currentRound: number       // 현재 라운드 (1, 2, 3)
+  currentRound: number       // 현재 라운드 (1, 2, 3, 4)
 }
 ```
 
@@ -89,9 +89,9 @@ localStorage.setItem('game-state', '복사한_JSON_데이터');
 
 ### CSV 파일 형식
 ```csv
-Team ID,Team Name,Members,Round 1 Score,Round 2 Score,Round 3 Score,Total Score
-1,"팀 1","홍길동, 김철수",10,20,30,60
-2,"팀 2","이영희, 박민수",15,25,35,75
+Team ID,Team Name,Members,Round 1 Score,Round 2 Score,Round 3 Score,Round 4 Score,Total Score
+1,"팀 1","홍길동, 김철수",10,20,30,15,75
+2,"팀 2","이영희, 박민수",15,25,35,20,95
 ...
 
 Game Settings

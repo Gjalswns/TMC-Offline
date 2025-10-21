@@ -92,6 +92,7 @@ export default function ScorerPage() {
                   <span>R1: {selectedTeam?.roundScores[0] || 0}</span>
                   <span>R2: {selectedTeam?.roundScores[1] || 0}</span>
                   <span>R3: {selectedTeam?.roundScores[2] || 0}</span>
+                  <span>R4: {selectedTeam?.roundScores[3] || 0}</span>
                 </div>
               </div>
             </Card>

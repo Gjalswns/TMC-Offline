@@ -167,7 +167,7 @@ export default function ControlPanel() {
               <h2 className="text-xl font-semibold text-black">팀 관리</h2>
               <div className="flex items-center gap-2">
                 <Label className="text-sm font-medium text-black">라운드:</Label>
-                {[1, 2, 3].map((round) => (
+                {[1, 2, 3, 4].map((round) => (
                   <Button
                     key={round}
                     size="sm"

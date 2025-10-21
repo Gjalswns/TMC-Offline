@@ -9,6 +9,7 @@ export function gameStateToCSV(state: GameState): string {
     'Round 1 Score',
     'Round 2 Score', 
     'Round 3 Score',
+    'Round 4 Score',
     'Total Score'
   ]
   
@@ -19,6 +20,7 @@ export function gameStateToCSV(state: GameState): string {
     team.roundScores[0]?.toString() || '0',
     team.roundScores[1]?.toString() || '0', 
     team.roundScores[2]?.toString() || '0',
+    team.roundScores[3]?.toString() || '0',
     team.score.toString()
   ])
   
@@ -73,16 +75,24 @@ export function parseCSVToTeams(csvContent: string): Partial<GameState> {
     
     const columns = parseCSVLine(line)
     if (columns.length >= 7) {
+      // 기존 3라운드 형식과 새로운 4라운드 형식 모두 지원
+      const isOldFormat = columns.length === 7
       const team: Team = {
         id: parseInt(columns[0]) || i,
         name: columns[1].replace(/"/g, ''),
         members: columns[2].replace(/"/g, ''),
-        roundScores: [
+        roundScores: isOldFormat ? [
           parseInt(columns[3]) || 0,
           parseInt(columns[4]) || 0,
-          parseInt(columns[5]) || 0
+          parseInt(columns[5]) || 0,
+          0 // 4번째 라운드는 0으로 초기화
+        ] : [
+          parseInt(columns[3]) || 0,
+          parseInt(columns[4]) || 0,
+          parseInt(columns[5]) || 0,
+          parseInt(columns[6]) || 0
         ],
-        score: parseInt(columns[6]) || 0
+        score: parseInt(columns[isOldFormat ? 6 : 7]) || 0
       }
       teams.push(team)
     }

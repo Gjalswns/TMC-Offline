@@ -160,6 +160,7 @@ export default function DisplayPage() {
                               <span>R1: {team.roundScores[0]}</span>
                               <span>R2: {team.roundScores[1]}</span>
                               <span>R3: {team.roundScores[2]}</span>
+                              <span>R4: {team.roundScores[3]}</span>
                             </div>
                           </div>
                         </div>
@@ -214,6 +215,7 @@ export default function DisplayPage() {
                               <span>R1: {team.roundScores[0]}</span>
                               <span>R2: {team.roundScores[1]}</span>
                               <span>R3: {team.roundScores[2]}</span>
+                              <span>R4: {team.roundScores[3]}</span>
                             </div>
                           </div>
                         </div>

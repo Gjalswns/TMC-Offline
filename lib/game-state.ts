@@ -3,7 +3,7 @@ export interface Team {
   name: string
   score: number
   members?: string
-  roundScores: number[] // [R1, R2, R3]
+  roundScores: number[] // [R1, R2, R3, R4]
 }
 
 export interface GameState {
@@ -15,7 +15,7 @@ export interface GameState {
   displayMode: "scoreboard" | "timer"
   autoSwitch: boolean
   timerMessage?: string
-  currentRound: number // 1, 2, or 3
+  currentRound: number // 1, 2, 3, or 4
 }
 
 const STORAGE_KEY = "game-state"
@@ -26,7 +26,7 @@ export const defaultState: GameState = {
     id: i + 1,
     name: `팀 ${i + 1}`,
     score: 0,
-    roundScores: [0, 0, 0], // Initialize with 3 rounds
+    roundScores: [0, 0, 0, 0], // Initialize with 4 rounds
   })),
   timerSeconds: 300,
   timerRunning: false,
@@ -45,10 +45,17 @@ export function loadGameState(): GameState {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) {
       const loadedState = JSON.parse(stored)
-      loadedState.teams = loadedState.teams.map((team: Team) => ({
-        ...team,
-        roundScores: team.roundScores || [0, 0, 0],
-      }))
+      loadedState.teams = loadedState.teams.map((team: Team) => {
+        // 기존 3라운드 데이터를 4라운드로 마이그레이션
+        let roundScores = team.roundScores || [0, 0, 0, 0]
+        if (roundScores.length === 3) {
+          roundScores = [...roundScores, 0] // 4번째 라운드 추가
+        }
+        return {
+          ...team,
+          roundScores,
+        }
+      })
       if (!loadedState.currentRound) {
         loadedState.currentRound = 1
       }
