@@ -10,11 +10,11 @@ export default function DisplayPage() {
   const [currentMode, setCurrentMode] = useState<"scoreboard" | "timer">("scoreboard")
 
   // 디버깅용 로그
-  console.log("Display 상태:", { 
-    autoSwitch: state.autoSwitch, 
-    timerRunning: state.timerRunning, 
+  console.log("Display 상태:", {
+    autoSwitch: state.autoSwitch,
+    timerRunning: state.timerRunning,
     timerSeconds: state.timerSeconds,
-    currentMode 
+    currentMode
   })
 
   useEffect(() => {
@@ -24,31 +24,36 @@ export default function DisplayPage() {
       return
     }
 
-    setCurrentMode(state.displayMode)
-  }, [state.displayMode, state.timerSeconds, state.timerRunning])
+    // 자동전환이 비활성화되어 있을 때만 displayMode를 따름
+    if (!state.autoSwitch) {
+      setCurrentMode(state.displayMode)
+    }
+  }, [state.displayMode, state.timerSeconds, state.timerRunning, state.autoSwitch])
 
   useEffect(() => {
-    // 1분 이하일 때는 자동 전환 비활성화
-    if (state.timerRunning && state.timerSeconds <= 60) {
-      return
-    }
+    let interval: NodeJS.Timeout | null = null
 
-    // autoSwitch가 활성화되어 있을 때만 자동 전환
     if (state.autoSwitch) {
-      console.log("자동 전환 시작됨") // 디버깅용
-      const interval = setInterval(() => {
+      console.log("자동 전환 시작됨", { autoSwitch: state.autoSwitch })
+
+      interval = setInterval(() => {
         setCurrentMode((prev) => {
           const newMode = prev === "scoreboard" ? "timer" : "scoreboard"
-          console.log(`화면 전환: ${prev} -> ${newMode}`) // 디버깅용
+          console.log(`화면 전환: ${prev} -> ${newMode}`)
           return newMode
         })
-      }, 10000)
-      return () => {
-        console.log("자동 전환 정리됨") // 디버깅용
+      }, 5000)
+    } else {
+      console.log("자동 전환 비활성화됨")
+    }
+
+    return () => {
+      if (interval) {
+        console.log("자동 전환 정리됨")
         clearInterval(interval)
       }
     }
-  }, [state.autoSwitch, state.timerSeconds, state.timerRunning])
+  }, [state.autoSwitch])
 
   const sortedTeams = [...state.teams].sort((a, b) => b.score - a.score)
   const leftTeams = sortedTeams.slice(0, 5)
@@ -89,9 +94,9 @@ export default function DisplayPage() {
     return `${mins}:${secs.toString().padStart(2, "0")}`
   }
 
-  const timerProgress = (state.timerSeconds / 300) * 100
+  const timerProgress = (state.timerSeconds / state.timerDuration) * 100
   const circumference = 2 * Math.PI * 240
-  const strokeDashoffset = circumference - (timerProgress / 100) * circumference
+  const strokeDashoffset = circumference * (1 - timerProgress / 100)
 
   const getTimerColor = () => {
     if (timerProgress > 50) return "stroke-blue-500"
@@ -109,7 +114,7 @@ export default function DisplayPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 p-8 overflow-hidden relative">
-      
+
 
       <div className="relative z-10">
         {currentMode === "scoreboard" ? (
@@ -128,112 +133,112 @@ export default function DisplayPage() {
               <div className="grid grid-cols-2 gap-8 max-w-7xl w-full">
                 {/* Left Column */}
                 <div className="space-y-4 flex flex-col justify-center">
-                {leftTeams.map((team, index) => {
-                  const globalIndex = index
-                  const rankStyle = getRankStyle(globalIndex)
+                  {leftTeams.map((team, index) => {
+                    const globalIndex = index
+                    const rankStyle = getRankStyle(globalIndex)
 
-                  return (
-                    <div
-                      key={team.id}
-                      className={
-                        rankStyle
-                          ? `${rankStyle.cardClass} rounded-2xl p-6`
-                          : "backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl"
-                      }
-                      style={{ animationDelay: `${index * 0.1}s` }}
-                    >
-                      <div className="flex items-center justify-between min-h-[80px]">
-                        <div className="flex items-center gap-4 flex-1">
-                          <div
-                            className={
-                              rankStyle
-                                ? `${rankStyle.badgeClass} w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl flex-shrink-0`
-                                : "w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/50 animate-pulse flex-shrink-0"
-                            }
-                          >
-                            {globalIndex + 1}
-                          </div>
-                          <div className="flex-1 min-w-0 py-2">
-                            <div className="text-2xl font-semibold text-white truncate leading-tight">{team.name}</div>
-                            {team.members && <div className="text-sm text-gray-400 mt-1 truncate">{team.members}</div>}
-                            <div className="flex gap-2 mt-2 text-xs text-gray-400">
-                              <span>R1: {team.roundScores[0]}</span>
-                              <span>R2: {team.roundScores[1]}</span>
-                              <span>R3: {team.roundScores[2]}</span>
-                              <span>R4: {team.roundScores[3]}</span>
+                    return (
+                      <div
+                        key={team.id}
+                        className={
+                          rankStyle
+                            ? `${rankStyle.cardClass} rounded-2xl p-6`
+                            : "backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl"
+                        }
+                        style={{ animationDelay: `${index * 0.1}s` }}
+                      >
+                        <div className="flex items-center justify-between min-h-[80px]">
+                          <div className="flex items-center gap-4 flex-1">
+                            <div
+                              className={
+                                rankStyle
+                                  ? `${rankStyle.badgeClass} w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl flex-shrink-0`
+                                  : "w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/50 animate-pulse flex-shrink-0"
+                              }
+                            >
+                              {globalIndex + 1}
+                            </div>
+                            <div className="flex-1 min-w-0 py-2">
+                              <div className="text-2xl font-semibold text-white truncate leading-tight">{team.name}</div>
+                              {team.members && <div className="text-sm text-gray-400 mt-1 truncate">{team.members}</div>}
+                              <div className="flex gap-2 mt-2 text-xs text-gray-400">
+                                <span>R1: {team.roundScores[0]}</span>
+                                <span>R2: {team.roundScores[1]}</span>
+                                <span>R3: {team.roundScores[2]}</span>
+                                <span>R4: {team.roundScores[3]}</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className="flex items-center justify-center flex-shrink-0 ml-4">
-                          <span
-                            className={
-                              rankStyle
-                                ? `text-5xl font-bold ${rankStyle.scoreClass}`
-                                : "text-5xl font-bold text-blue-400 drop-shadow-lg drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]"
-                            }
-                          >
-                            {team.score}
-                          </span>
+                          <div className="flex items-center justify-center flex-shrink-0 ml-4">
+                            <span
+                              className={
+                                rankStyle
+                                  ? `text-5xl font-bold ${rankStyle.scoreClass}`
+                                  : "text-5xl font-bold text-blue-400 drop-shadow-lg drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+                              }
+                            >
+                              {team.score}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )
-                })}
-              </div>
+                    )
+                  })}
+                </div>
 
                 {/* Right Column */}
                 <div className="space-y-4 flex flex-col justify-center">
-                {rightTeams.map((team, index) => {
-                  const globalIndex = index + 5
-                  const rankStyle = getRankStyle(globalIndex)
+                  {rightTeams.map((team, index) => {
+                    const globalIndex = index + 5
+                    const rankStyle = getRankStyle(globalIndex)
 
-                  return (
-                    <div
-                      key={team.id}
-                      className={
-                        rankStyle
-                          ? `${rankStyle.cardClass} rounded-2xl p-6 hover:scale-105 transition-all duration-300 animate-slide-in-right`
-                          : "backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl hover:bg-white/20 hover:scale-105 hover:shadow-purple-500/50 transition-all duration-300 animate-slide-in-right"
-                      }
-                      style={{ animationDelay: `${index * 0.1}s` }}
-                    >
-                      <div className="flex items-center justify-between min-h-[80px]">
-                        <div className="flex items-center gap-4 flex-1">
-                          <div
-                            className={
-                              rankStyle
-                                ? `${rankStyle.badgeClass} w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl flex-shrink-0`
-                                : "w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-purple-500/50 animate-pulse flex-shrink-0"
-                            }
-                          >
-                            {globalIndex + 1}
-                          </div>
-                          <div className="flex-1 min-w-0 py-2">
-                            <div className="text-2xl font-semibold text-white truncate leading-tight">{team.name}</div>
-                            {team.members && <div className="text-sm text-gray-400 mt-1 truncate">{team.members}</div>}
-                            <div className="flex gap-2 mt-2 text-xs text-gray-400">
-                              <span>R1: {team.roundScores[0]}</span>
-                              <span>R2: {team.roundScores[1]}</span>
-                              <span>R3: {team.roundScores[2]}</span>
-                              <span>R4: {team.roundScores[3]}</span>
+                    return (
+                      <div
+                        key={team.id}
+                        className={
+                          rankStyle
+                            ? `${rankStyle.cardClass} rounded-2xl p-6 hover:scale-105 transition-all duration-300 animate-slide-in-right`
+                            : "backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl hover:bg-white/20 hover:scale-105 hover:shadow-purple-500/50 transition-all duration-300 animate-slide-in-right"
+                        }
+                        style={{ animationDelay: `${index * 0.1}s` }}
+                      >
+                        <div className="flex items-center justify-between min-h-[80px]">
+                          <div className="flex items-center gap-4 flex-1">
+                            <div
+                              className={
+                                rankStyle
+                                  ? `${rankStyle.badgeClass} w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl flex-shrink-0`
+                                  : "w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-purple-500/50 animate-pulse flex-shrink-0"
+                              }
+                            >
+                              {globalIndex + 1}
+                            </div>
+                            <div className="flex-1 min-w-0 py-2">
+                              <div className="text-2xl font-semibold text-white truncate leading-tight">{team.name}</div>
+                              {team.members && <div className="text-sm text-gray-400 mt-1 truncate">{team.members}</div>}
+                              <div className="flex gap-2 mt-2 text-xs text-gray-400">
+                                <span>R1: {team.roundScores[0]}</span>
+                                <span>R2: {team.roundScores[1]}</span>
+                                <span>R3: {team.roundScores[2]}</span>
+                                <span>R4: {team.roundScores[3]}</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className="flex items-center justify-center flex-shrink-0 ml-4">
-                          <span
-                            className={
-                              rankStyle
-                                ? `text-5xl font-bold ${rankStyle.scoreClass}`
-                                : "text-5xl font-bold text-purple-400 drop-shadow-lg drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]"
-                            }
-                          >
-                            {team.score}
-                          </span>
+                          <div className="flex items-center justify-center flex-shrink-0 ml-4">
+                            <span
+                              className={
+                                rankStyle
+                                  ? `text-5xl font-bold ${rankStyle.scoreClass}`
+                                  : "text-5xl font-bold text-purple-400 drop-shadow-lg drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]"
+                              }
+                            >
+                              {team.score}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )
-                })}
+                    )
+                  })}
                 </div>
               </div>
             </div>
